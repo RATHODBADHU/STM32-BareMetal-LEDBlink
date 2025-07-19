@@ -1,0 +1,34 @@
+#include <stdint.h>
+
+// Simple delay function
+void delay(void);
+
+int main(void)
+{
+    // Define pointers to memory-mapped peripheral registers
+    uint32_t *pRCC_AHB2ENR = (uint32_t *)0x4002104C;
+    uint32_t *pGPIOA_MODER = (uint32_t *)0x48000000;
+    uint32_t *pGPIOA_ODR   = (uint32_t *)0x48000014;
+
+    // 1. Enable the clock for GPIOA in RCC AHB2ENR register
+    *pRCC_AHB2ENR |= (1 << 0);  // Bit 0 enables GPIOA
+
+    // 2. Set PA5 as general-purpose output
+    *pGPIOA_MODER &= ~(3 << (5 * 2));  // Clear MODER5[1:0]
+    *pGPIOA_MODER |=  (1 << (5 * 2));  // Set MODER5 to 01 (output)
+
+    // 3. Blink the LED connected to PA5
+    while (1)
+    {
+        *pGPIOA_ODR |=  (1 << 5);  // Set PA5 high (LED ON)
+        delay();
+        *pGPIOA_ODR &= ~(1 << 5);  // Set PA5 low (LED OFF)
+        delay();
+    }
+}
+
+// Software delay function
+void delay(void)
+{
+    for (uint32_t i = 0; i < 300000; i++);
+}
